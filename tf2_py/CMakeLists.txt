@@ -90,12 +90,13 @@ catkin_package(
 # so build with the objects directly instead.
 
 link_libraries(${PYTHON_LIBRARIES})
-add_library(tf2_py src/tf2_py.cpp)
+add_library(tf2_py SHARED src/tf2_py.cpp)
 target_link_libraries(tf2_py ${catkin_LIBRARIES})
 add_dependencies(tf2_py ${catkin_EXPORTED_TARGETS})
 
 set_target_properties(tf2_py PROPERTIES OUTPUT_NAME tf2 PREFIX "_" SUFFIX ".so")
 set_target_properties(tf2_py PROPERTIES COMPILE_FLAGS "-g -Wno-missing-field-initializers")
+set_target_properties(tf2_py PROPERTIES DEBUG_POSTFIX "" RELEASE_POSTFIX "")
 set_target_properties(tf2_py PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}
   LIBRARY_OUTPUT_DIRECTORY ${CATKIN_DEVEL_PREFIX}/${CATKIN_PACKAGE_PYTHON_DESTINATION}

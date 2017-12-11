@@ -3,12 +3,13 @@ project(tf2)
 
 find_package(console_bridge REQUIRED)
 find_package(catkin REQUIRED COMPONENTS geometry_msgs rostime tf2_msgs)
-find_package(Boost REQUIRED COMPONENTS signals system thread)
+find_package(Boost REQUIRED COMPONENTS system thread)
 
+set(PROJECT_INSTALLSPACE_LIBRARIES ros::tf2)
 catkin_package(
    INCLUDE_DIRS include
    LIBRARIES tf2 
-   DEPENDS console_bridge
+   DEPENDS console_bridge "Boost COMPONENTS system thread"
    CATKIN_DEPENDS geometry_msgs tf2_msgs rostime)
 
 include_directories (src/bt)
@@ -18,13 +19,27 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${console_bridge_INCLUDE_DIRS
 
 #CPP Libraries
 add_library(tf2 src/cache.cpp src/buffer_core.cpp src/static_cache.cpp)
-target_link_libraries(tf2 ${Boost_LIBRARIES} ${catkin_LIBRARIES} ${console_bridge_LIBRARIES})
+target_link_libraries(tf2
+    ${catkin_LIBRARIES}
+    Boost::system Boost::thread
+    ros::console_bridge
+)
 add_dependencies(tf2 ${catkin_EXPORTED_TARGETS})
+target_include_directories(tf2 PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 install(TARGETS tf2
+  EXPORT ${PROJECT_NAME}Targets
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(EXPORT ${PROJECT_NAME}Targets
+  DESTINATION share/${PROJECT_NAME}/cmake
+  NAMESPACE ros::
+  FILE ${PROJECT_NAME}Targets.cmake
 )
 
 install(DIRECTORY include/${PROJECT_NAME}/

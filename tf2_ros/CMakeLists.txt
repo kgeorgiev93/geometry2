@@ -17,10 +17,11 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_msgs
   ${TF2_PY}
 )
-find_package(Boost REQUIRED COMPONENTS thread)
+find_package(Boost CONFIG REQUIRED COMPONENTS thread)
 
 catkin_python_setup()
 
+set(PROJECT_INSTALLSPACE_LIBRARIES ros::${PROJECT_NAME})
 catkin_package(
   INCLUDE_DIRS include
   LIBRARIES ${PROJECT_NAME}
@@ -49,6 +50,10 @@ add_library(${PROJECT_NAME}
 )
 add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES})
+target_include_directories(${PROJECT_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
 
 # buffer_server executable
 add_executable(${PROJECT_NAME}_buffer_server src/buffer_server_main.cpp)
@@ -56,7 +61,7 @@ add_dependencies(${PROJECT_NAME}_buffer_server ${catkin_EXPORTED_TARGETS})
 target_link_libraries(${PROJECT_NAME}_buffer_server
   ${PROJECT_NAME}
   ${catkin_LIBRARIES}
-  ${Boost_LIBRARIES}
+  Boost::thread
 )
 set_target_properties(${PROJECT_NAME}_buffer_server
   PROPERTIES OUTPUT_NAME buffer_server
@@ -76,8 +81,20 @@ set_target_properties(${PROJECT_NAME}_static_transform_publisher
 )
 
 # Install rules
+install(TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(EXPORT ${PROJECT_NAME}Targets
+  DESTINATION share/${PROJECT_NAME}/cmake
+  NAMESPACE ros::
+  FILE ${PROJECT_NAME}Targets.cmake
+)
+
 install(TARGETS
-  ${PROJECT_NAME} ${PROJECT_NAME}_buffer_server
+  ${PROJECT_NAME}_buffer_server
   ${PROJECT_NAME}_static_transform_publisher
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
